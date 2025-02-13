@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import { products } from '../../data/products';
+import FilterControls from '../../components/buttons/FilterControls.astro';
+import IconType from '../../components/IconType.astro';
+
+export async function getStaticPaths() {
+  return products.map(({type}) => ({
+    params: { typeAll: type },
+    props: { type },
+  }));
+}
+
+const {type= '' } = Astro.props;
+
+// FILTRO SEGUN SEXO Y CATEGORIA
+
+const filteredProducts = products.filter(p =>  p.type === type);
+const isAccessory = type === 'accesorio';
+const titleText = `${isAccessory ? '' : 'Ropa'} ${type.charAt(0).toUpperCase() + type.slice(1)}${isAccessory ? 's' : ''}`;
+---
+
+<BaseLayout title={`Catálogo de Ropa - Parte ${type}`}>
+
+<!-- Título de la Página -->
+<h2 class="text-3xl font-bold text-center my-8 flex items-center justify-center">
+  {titleText}
+  <span class="ml-2 inline-block" style="width: 40px; height: 40px;">
+    <IconType type={type} />
+  </span>
+</h2>
+
+  <!-- <h2 class="text-3xl font-bold text-center my-8">{`Ropa ${type.charAt(0).toUpperCase() + type.slice(1)} para Todos`}</h2> -->
+
+  <FilterControls baseRoute="categoria" />
+
+  <!-- Lista de Productos Filtrados -->
+  <ProductGrid products={filteredProducts}  />
+</BaseLayout>

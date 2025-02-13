@@ -1,0 +1,51 @@
+---
+import ProductCard from './ProductCard.astro';
+
+interface Props {
+  products: import('../data/products').Product[];
+}
+
+const { products = [] } = Astro.props;
+---
+
+<div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+>
+  {products.map((product, index) => (
+    <div
+      class="opacity-0 will-change-transform "
+      style={{
+        animation: `fadeInUp 0.8s ease-out forwards`,
+        'animation-delay': `${Math.min(600, products.indexOf(product) * 200)}ms`
+      }}
+    >
+      <ProductCard
+        name={product.name}
+        slug={product.slug}
+        images={product.images}
+        price={product.price}
+        type={product.type || ''}
+        discount={product.discount || 0}
+        sizes={product.sizes || ['S', 'M', 'L']}
+        color={product.color}
+      />
+    </div>
+  ))}
+</div>
+
+<style>
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .grid {
+    contain: content;
+    content-visibility: auto;
+  }
+</style>

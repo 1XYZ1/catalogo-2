@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductGrid from '../components/ProductGrid.astro';
+import { products } from '../data/products';
+import FilterControls from '../components/buttons/FilterControls.astro';
+
+
+---
+
+<BaseLayout title="Catálogo de Ropa" >
+
+  <!-- <main class="container mx-auto px-4"> -->
+    <h2 class="text-3xl font-bold text-center my-8 flex items-center justify-center">
+      Catálogo de Ropa
+
+    </h2>
+
+    <FilterControls baseRoute="categoria" />
+
+    <ProductGrid products={products} />
+  <!-- </main> -->
+</BaseLayout>

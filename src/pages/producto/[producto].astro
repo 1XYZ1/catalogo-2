@@ -1,0 +1,178 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { products } from '../../data/products';
+import EmblaIsla from '../../components/Carousel/EmblaIsla.astro';
+import ProductDetail from '../../components/ProductDetail';
+import { siteInfo } from '../../constantes/site-info';
+
+import { formatPrice, calculateDiscountedPrice } from '../../utils/formatters';
+
+// Primero definimos los tipos base (opcional pero recomendado)
+
+
+// Exportamos la función getStaticPaths primero
+export async function getStaticPaths() {
+  // Filtramos productos válidos
+  const validProducts = products.filter(product =>
+    product &&
+    product.slug &&
+    product.name &&
+    product.images?.length > 0
+  );
+
+  // Para cada producto, encontramos sus relacionados
+  return validProducts.map((product) => {
+    // Encontrar productos relacionados aquí mismo
+    const relatedProducts = products.filter(p =>
+      p.type === product.type && // Mismo tipo
+      p.slug !== product.slug && // No es el mismo producto
+      p.gender === product.gender // Mismo género
+    ).slice(0, 4); // Limitamos a 4 productos
+
+    return {
+      params: { producto: product.slug },
+      props: {
+        product,
+        relatedProducts
+      }
+    };
+  });
+}
+
+// Obtenemos las props
+const { product, relatedProducts } = Astro.props;
+
+const seoData = {
+  title: `${product.name} | ${siteInfo.title}`,
+  description: product.shortDescription || `${product.name} - ${product.description?.slice(0, 155)}...`,
+  ogimage: product.ogimage,
+  type: 'product' as const // Tipado explícito
+};
+---
+
+<script>
+  // Restaurar posición y animar entrada
+  const savedPosition = sessionStorage.getItem('scrollPosition');
+  if (savedPosition) {
+    window.scrollTo(0, parseInt(savedPosition));
+    sessionStorage.removeItem('scrollPosition');
+  }
+</script>
+
+<!-- Resto de tu código HTML igual que antes -->
+<BaseLayout {...seoData}>
+
+
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    {/* Navegación y breadcrumbs */}
+    <div class="h-[46px] mb-6"> {/* Altura fija para prevenir saltos */}
+      <button
+        onclick="!document.referrer.includes(location.hostname)?location='/':history.back()"
+        class="group inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+      >
+        <svg
+          class="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+        <span class="text-sm font-medium">Regresar</span>
+      </button>
+    </div>
+
+    {/* Grid principal usando CSS Grid */}
+     {/* Grid principal */}
+     <div class="grid lg:grid-cols-[1fr,400px] gap-8 items-start">
+    <!-- Carrusel en móvil -->
+    <div class="relative w-full">
+      <div class="md:sticky md:top-24 bg-transparent md:bg-white rounded-xl overflow-hidden
+        min-h-[400px] sm:min-h-[500px] md:min-h-[600px] lg:min-h-[700px]
+        max-h-[500px] sm:max-h-[600px] md:max-h-[700px] lg:max-h-[750px]
+        h-full mx-auto lg:max-w-[800px]">
+        <EmblaIsla
+          slug={product.slug}
+          images={product.images}
+          name={product.name}
+
+        />
+      </div>
+    </div>
+
+    <!-- Columna derecha -->
+    <div class="space-y-8">
+      <ProductDetail product={product} client:load />
+    </div>
+  </div>
+
+        {/* Productos Relacionados - Sección independiente */}
+        {relatedProducts.length > 0 && (
+          <section class="mt-12 bg-white rounded-xl p-6 text-center">
+            <h2 class="text-xl font-bold mb-6 ">Productos Similares</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {relatedProducts.map(related => (
+
+                 <a href={`/producto/${related.slug}`}
+                  class="group space-y-2"
+
+                >
+                  <div class=" overflow-hidden rounded-lg">
+                    <img
+                      src={related.images[0]}
+                      alt={related.name}
+                      class="w-full h-full object-cover transition duration-300 hover:scale-110"
+                      loading="lazy"
+
+                    />
+                  </div>
+                  <div class="space-y-1">
+                    <h3 class="text-sm font-medium line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      {related.name}
+                    </h3>
+                    <div class="h-14 flex flex-col items-center justify-center">
+                  {related.discount && related.discount > 0 ? (
+                    <div class="space-y-1">
+                      <div class="flex items-center justify-center gap-2">
+                        <span class="text-base text-gray-400 line-through">
+                          ${formatPrice(related.price)}
+                        </span>
+                        <span class="text-xl font-bold text-red-500">
+                          ${formatPrice(calculateDiscountedPrice(related.price, related.discount))}
+                        </span>
+                      </div>
+                      <span class="inline-block px-2 py-0.5 bg-red-100 text-red-600 text-xs font-medium rounded-full">
+                        {related.discount}% OFF
+                      </span>
+                    </div>
+                  ) : (
+                    <p class="text-xl font-bold text-gray-900">
+                      ${formatPrice(related.price)}
+                    </p>
+                  )}
+                </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+            )}
+          </div>
+
+  </main>
+</BaseLayout>
+
+<style>
+
+
+  /* Optimizar carga de imágenes */
+  img {
+    content-visibility: auto;
+    contain: paint;
+  }
+</style>
