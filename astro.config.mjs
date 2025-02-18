@@ -18,7 +18,7 @@ export default defineConfig({
   integrations: [tailwind(), solidJs(), icon()],
   output: 'server',
   adapter: vercel({
-    imageService: false,
+    imageService: true,
   }),
 
 });
