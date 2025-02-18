@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+
 interface SizeType {
   size: string;
   stock: number;
@@ -50,7 +52,7 @@ const capitalizeFirstLetter = (str: string) => {
   {/* Contenedor de imagen con aspect ratio fijo */}
   <div class="relative aspect-[1/1.2]">
     <a href={`/producto/${slug}`} class="block h-full">
-      <img
+      <Image
         loading="lazy"
         decoding="async"
         width="400"

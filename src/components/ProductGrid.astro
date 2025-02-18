@@ -1,38 +1,60 @@
 ---
 import ProductCard from './ProductCard.astro';
+import type { Product } from '../data/products';
 
 interface Props {
-  products: import('../data/products').Product[];
+  products: Product[];
 }
 
 const { products = [] } = Astro.props;
+
+// Calcular las dimensiones del grid basado en el número de productos
+const gridHeight = Math.ceil(products.length / 3) * 400; // Altura aproximada por fila
 ---
 
-<div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+<div
+  class="grid-container"
+  style={`min-height: ${gridHeight}px`}
 >
-  {products.map((product, index) => (
-    <div
-      class="opacity-0 will-change-transform "
-      style={{
-        animation: `fadeInUp 0.8s ease-out forwards`,
-        'animation-delay': `${Math.min(600, products.indexOf(product) * 200)}ms`
-      }}
-    >
-      <ProductCard
-        name={product.name}
-        slug={product.slug}
-        images={product.images}
-        price={product.price}
-        type={product.type || ''}
-        discount={product.discount || 0}
-        sizes={product.sizes || ['S', 'M', 'L']}
-        color={product.color}
-      />
-    </div>
-  ))}
+  <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    {products.map((product) => (
+      <div
+        class="product-item"
+        style={{
+          '--delay': `${Math.min(300, products.indexOf(product) * 100)}ms`
+        }}
+      >
+        <ProductCard
+          name={product.name}
+          slug={product.slug}
+          images={product.images}
+          price={product.price}
+          type={product.type || ''}
+          discount={product.discount || 0}
+          sizes={product.sizes || ['S', 'M', 'L']}
+          color={product.color}
+        />
+      </div>
+    ))}
+  </div>
 </div>
 
 <style>
+  .grid-container {
+    contain: layout size;
+    content-visibility: auto;
+  }
+
+  .product-item {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease-out forwards;
+    animation-delay: var(--delay);
+    will-change: opacity, transform;
+    contain: paint layout;
+  }
+
+  /* Optimizar la animación para mejor rendimiento */
   @keyframes fadeInUp {
     from {
       opacity: 0;
@@ -44,8 +66,12 @@ const { products = [] } = Astro.props;
     }
   }
 
-  .grid {
-    contain: content;
-    content-visibility: auto;
+  /* Deshabilitar animaciones si el usuario prefiere reducir el movimiento */
+  @media (prefers-reduced-motion: reduce) {
+    .product-item {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
   }
 </style>
